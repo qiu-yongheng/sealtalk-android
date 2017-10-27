@@ -39,6 +39,9 @@ import io.rong.imlib.model.UserInfo;
 /**
  * Created by AMing on 16/1/15.
  * Company RongCloud
+ * 1. 输入账号密码登录, 返回token, 使用token登录融云
+ * 2. token登录成功, 同步账号信息, 同步好友信息到本地
+ * 3. token登录失效, 重新请求新的token进行登录
  */
 public class LoginActivity extends BaseActivity implements View.OnClickListener {
 
@@ -75,6 +78,7 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
         forgetPassword.setOnClickListener(this);
         mConfirm.setOnClickListener(this);
         mRegister.setOnClickListener(this);
+        // 设置动画
         mImg_Background = (ImageView) findViewById(R.id.de_img_backgroud);
         new Handler().postDelayed(new Runnable() {
             @Override
@@ -110,6 +114,7 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
             mPasswordEdit.setText(oldPassword);
         }
 
+        // 判断是否被踢下线
         if (getIntent().getBooleanExtra("kickedByOtherClient", false)) {
             final AlertDialog dlg = new AlertDialog.Builder(LoginActivity.this).create();
             dlg.show();
@@ -158,12 +163,15 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
                 editor.putBoolean("exit", false);
                 editor.apply();
                 String oldPhone = sp.getString(SealConst.SEALTALK_LOGING_PHONE, "");
+                // 登录请求
                 request(LOGIN, true);
                 break;
             case R.id.de_login_register:
+                // 注册
                 startActivityForResult(new Intent(this, RegisterActivity.class), 1);
                 break;
             case R.id.de_login_forgot:
+                // 忘记密码
                 startActivityForResult(new Intent(this, ForgetPasswordActivity.class), 2);
                 break;
         }
@@ -197,6 +205,13 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
     }
 
 
+    /**
+     * 请求回调: 执行后台任务
+     * @param requestCode
+     * @param id
+     * @return
+     * @throws HttpException
+     */
     @Override
     public Object doInBackground(int requestCode, String id) throws HttpException {
         switch (requestCode) {
@@ -210,6 +225,11 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
         return null;
     }
 
+    /**
+     * 请求回调: 请求成功
+     * @param requestCode
+     * @param result
+     */
     @Override
     public void onSuccess(int requestCode, Object result) {
         if (result != null) {
@@ -223,6 +243,7 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
                                 @Override
                                 public void onTokenIncorrect() {
                                     NLog.e("connect", "onTokenIncorrect");
+                                    // token不正确, 重新获取token
                                     reGetToken();
                                 }
 
@@ -230,9 +251,11 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
                                 public void onSuccess(String s) {
                                     connectResultId = s;
                                     NLog.e("connect", "onSuccess userid:" + s);
+                                    // 保存登录账号
                                     editor.putString(SealConst.SEALTALK_LOGIN_ID, s);
                                     editor.apply();
                                     SealUserInfoManager.getInstance().openDB();
+                                    // 请求用户信息
                                     request(SYNC_USER_INFO, true);
                                 }
 
@@ -258,6 +281,7 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
                         }
                         String nickName = userInfoByIdResponse.getResult().getNickname();
                         String portraitUri = userInfoByIdResponse.getResult().getPortraitUri();
+                        // 保存用户账号头像
                         editor.putString(SealConst.SEALTALK_LOGIN_NAME, nickName);
                         editor.putString(SealConst.SEALTALK_LOGING_PORTRAIT, portraitUri);
                         editor.apply();
@@ -265,6 +289,7 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
                     }
                     //不继续在login界面同步好友,群组,群组成员信息
                     SealUserInfoManager.getInstance().getAllUserInfo();
+                    // 跳转界面
                     goToMain();
                     break;
                 case GET_TOKEN:
@@ -332,6 +357,12 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
         super.onDestroy();
     }
 
+    /**
+     * 跳转界面
+     * 保存token
+     * 保存用户名
+     * 保存密码
+     */
     private void goToMain() {
         editor.putString("loginToken", loginToken);
         editor.putString(SealConst.SEALTALK_LOGING_PHONE, phoneString);

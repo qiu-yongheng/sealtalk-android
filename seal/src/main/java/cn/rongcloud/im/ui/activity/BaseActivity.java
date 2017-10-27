@@ -60,7 +60,6 @@ public abstract class BaseActivity extends FragmentActivity implements OnDataLis
         mAsyncTaskManager = AsyncTaskManager.getInstance(getApplicationContext());
         // Activity管理
         action = new SealAction(mContext);
-
     }
 
 

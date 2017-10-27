@@ -72,10 +72,10 @@ public class App extends MultiDexApplication {
         if (getApplicationInfo().packageName.equals(getCurProcessName(getApplicationContext()))) {
 
 //            LeakCanary.install(this);//内存泄露检测
-            RongPushClient.registerHWPush(this);
-            RongPushClient.registerMiPush(this, "2882303761517473625", "5451747338625");
+            RongPushClient.registerHWPush(this); // 华为推送
+            RongPushClient.registerMiPush(this, "2882303761517473625", "5451747338625"); // 小米推送
             try {
-                RongPushClient.registerGCM(this);
+                RongPushClient.registerGCM(this); // Google推送
             } catch (RongException e) {
                 e.printStackTrace();
             }
@@ -90,9 +90,9 @@ public class App extends MultiDexApplication {
              * 只有两个进程需要初始化，主进程和 push 进程
              */
             RongIM.setServerInfo("nav.cn.ronghub.com", "up.qbox.me");
-            RongIM.init(this);
+            RongIM.init(this); // 初始化IM
             NLog.setDebug(true);//Seal Module Log 开关
-            SealAppContext.init(this);
+            SealAppContext.init(this); // 创建监听回调对象
             SharedPreferencesContext.init(this);
             Thread.setDefaultUncaughtExceptionHandler(new RongExceptionHandler(this));
 
@@ -107,6 +107,7 @@ public class App extends MultiDexApplication {
                 e.printStackTrace();
             }
 
+            // 如果有缓存token, 打开数据库
             openSealDBIfHasCachedToken();
 
             options = new DisplayImageOptions.Builder()

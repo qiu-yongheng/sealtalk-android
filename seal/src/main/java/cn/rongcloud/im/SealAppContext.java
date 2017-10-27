@@ -212,6 +212,12 @@ public class SealAppContext implements RongIM.ConversationListBehaviorListener,
         return false;
     }
 
+    /**
+     * 监听推送
+     * @param message
+     * @param i
+     * @return
+     */
     @Override
     public boolean onReceived(Message message, int i) {
         MessageContent messageContent = message.getContent();

@@ -320,6 +320,7 @@
             </intent-filter>
         </activity>
 
+        <!-- 欢迎界面 -->
         <activity
             android:name=".ui.activity.SplashActivity"
             android:screenOrientation="portrait"

@@ -64,6 +64,8 @@ import io.rong.imlib.model.UserInfo;
 
 /**
  * Created by tiankui on 16/8/31.
+ * 搜索界面
+ *
  */
 public class SealSearchActivity extends Activity {
     private static final int SEARCH_TYPE_FLAG = 1;
@@ -118,6 +120,7 @@ public class SealSearchActivity extends Activity {
         mMoreChattingRecordsLinearLayout = (LinearLayout) findViewById(R.id.ac_ll_more_chatting_records);
         mChattingRecordsListView = (ListView) findViewById(R.id.ac_lv_filtered_chatting_records_list);
 
+        // 联系人: 点击进入单聊界面
         mFriendListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -132,6 +135,8 @@ public class SealSearchActivity extends Activity {
                 }
             }
         });
+
+        // 群组: 点击进入群聊界面
         mGroupsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -145,6 +150,8 @@ public class SealSearchActivity extends Activity {
                 }
             }
         });
+
+        // 聊天记录
         mChattingRecordsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -154,8 +161,10 @@ public class SealSearchActivity extends Activity {
                     int count = result.getMatchCount();
                     Conversation conversation = result.getConversation();
                     if (count == 1) {
+                        // 只有一条聊天记录, 直接打开会话界面
                         RongIM.getInstance().startConversation(SealSearchActivity.this, conversation.getConversationType(), conversation.getTargetId(), result.getTitle(), result.getConversation().getSentTime());
                     } else {
+                        // 跳转到聊天记录列表界面
                         Intent intent = new Intent(SealSearchActivity.this, SealSearchChattingDetailActivity.class);
                         intent.putExtra("filterString", mFilterString);
                         intent.putExtra("searchConversationResult", result);

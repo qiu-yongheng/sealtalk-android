@@ -64,6 +64,7 @@ dependencies {
     compile project(':recognizer')
     compile project(':contactcard')
     compile project(':sticker')
+    // 解决65535问题
     compile 'com.android.support:multidex:1.0.1'
     compile 'com.facebook.stetho:stetho:1.4.1'
     compile files('libs/MiPush_SDK_Client_3_2_2.jar')

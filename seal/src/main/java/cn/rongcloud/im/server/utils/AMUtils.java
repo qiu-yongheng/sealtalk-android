@@ -31,6 +31,11 @@ public class AMUtils {
     }
 
 
+    /**
+     * 隐藏软键盘
+     * @param context
+     * @param et
+     */
     public static void onInactive(Context context, EditText et) {
 
         if (et == null)

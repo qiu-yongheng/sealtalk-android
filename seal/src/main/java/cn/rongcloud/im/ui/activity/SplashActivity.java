@@ -17,6 +17,10 @@ import io.rong.imkit.RongIM;
 /**
  * Created by AMing on 16/8/5.
  * Company RongCloud
+ * 引导页
+ * 1. 判断是否有缓存token
+ * 2. 如果有, 直接跳转MAinActivity
+ * 3. 没有, 跳转LoginActivity
  */
 public class SplashActivity extends Activity {
 
@@ -31,8 +35,10 @@ public class SplashActivity extends Activity {
         setContentView(R.layout.activity_splash);
         context = this;
         SharedPreferences sp = getSharedPreferences("config", MODE_PRIVATE);
+        // 获取缓存的token
         String cacheToken = sp.getString("loginToken", "");
         if (!TextUtils.isEmpty(cacheToken)) {
+            // 有缓存的token
             RongIM.connect(cacheToken, SealAppContext.getInstance().getConnectCallback());
             handler.postDelayed(new Runnable() {
                 @Override

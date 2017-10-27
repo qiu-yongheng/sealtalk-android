@@ -2,7 +2,6 @@ package cn.rongcloud.im.ui.activity;
 
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -52,6 +51,7 @@ import io.rong.imlib.model.UserInfo;
 /**
  * Created by AMing on 16/1/21.
  * Company RongCloud
+ * 选择好友, 创建聊天室或群组
  */
 public class SelectFriendsActivity extends BaseActivity implements View.OnClickListener {
 
@@ -110,11 +110,17 @@ public class SelectFriendsActivity extends BaseActivity implements View.OnClickL
         mHeadRightText.setOnClickListener(this);
         mSelectedFriend = new ArrayList<>();
         mSelectedFriendsLinearLayout = (LinearLayout) findViewById(R.id.ll_selected_friends);
+        // 获取是否创建群组的标示
         isCrateGroup = getIntent().getBooleanExtra("createGroup", false);
+        // 是否讨论组
         isConversationActivityStartDiscussion = getIntent().getBooleanExtra("CONVERSATION_DISCUSSION", false);
+        // 是否私聊
         isConversationActivityStartPrivate = getIntent().getBooleanExtra("CONVERSATION_PRIVATE", false);
+        // 组ID
         groupId = getIntent().getStringExtra("GroupId");
+        // 是否添加组员
         isAddGroupMember = getIntent().getBooleanExtra("isAddGroupMember", false);
+        // 是否删除组员
         isDeleteGroupMember = getIntent().getBooleanExtra("isDeleteGroupMember", false);
         if (isAddGroupMember || isDeleteGroupMember) {
             initGroupMemberList();
@@ -134,6 +140,9 @@ public class SelectFriendsActivity extends BaseActivity implements View.OnClickL
         initData();
     }
 
+    /**
+     * 根据groupId获取组员列表
+     */
     private void initGroupMemberList() {
         SealUserInfoManager.getInstance().getGroupMembers(groupId, new SealUserInfoManager.ResultCallback<List<GroupMember>>() {
             @Override
@@ -234,6 +243,9 @@ public class SelectFriendsActivity extends BaseActivity implements View.OnClickL
         }
     }
 
+    /**
+     *
+     */
     private void fillSourceDataList() {
         if (data_list != null && data_list.size() > 0) {
             sourceDataList = filledData(data_list); //过滤数据为有字母的字段  现在有字母 别的数据没有
@@ -294,19 +306,25 @@ public class SelectFriendsActivity extends BaseActivity implements View.OnClickL
         adapter.notifyDataSetChanged();
     }
 
+    /**
+     * 获取全部好友信息
+     */
     private void fillSourceDataListWithFriendsInfo() {
+        // 获取全部好友信息
         SealUserInfoManager.getInstance().getFriends(new SealUserInfoManager.ResultCallback<List<Friend>>() {
             @Override
             public void onSuccess(List<Friend> friendList) {
                 if (mListView != null) {
                     if (friendList != null && friendList.size() > 0) {
                         for (Friend friend : friendList) {
+                            // 保存所有好友信息
                             data_list.add(new Friend(friend.getUserId(), friend.getName(), friend.getPortraitUri(), friend.getDisplayName(), null, null));
                         }
                         if (isAddGroupMember) {
                             for (GroupMember groupMember : addGroupMemberList) {
                                 for (int i = 0; i < data_list.size(); i++) {
                                     if (groupMember.getUserId().equals(data_list.get(i).getUserId())) {
+                                        // 移除已经在组中的联系人
                                         data_list.remove(i);
                                     }
                                 }
@@ -326,10 +344,14 @@ public class SelectFriendsActivity extends BaseActivity implements View.OnClickL
         });
     }
 
+    /**
+     *
+     */
     private void fillSourceDataListForDeleteGroupMember() {
         if (deleteGroupMemberList != null && deleteGroupMemberList.size() > 0) {
             for (GroupMember deleteMember : deleteGroupMemberList) {
                 if (deleteMember.getUserId().contains(getSharedPreferences("config", MODE_PRIVATE).getString(SealConst.SEALTALK_LOGIN_ID, ""))) {
+                    // 如果
                     continue;
                 }
                 data_list.add(new Friend(deleteMember.getUserId(),
@@ -690,6 +712,7 @@ public class SelectFriendsActivity extends BaseActivity implements View.OnClickL
                         }
                     }
 
+                    // 添加成员到讨论组
                     if (isConversationActivityStartDiscussion) {
                         if (RongIM.getInstance() != null) {
                             RongIM.getInstance().addMemberToDiscussion(conversationStartId, startDisList, new RongIMClient.OperationCallback() {

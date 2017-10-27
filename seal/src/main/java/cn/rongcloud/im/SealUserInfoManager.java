@@ -186,15 +186,18 @@ public class SealUserInfoManager implements OnDataListener {
         if (TextUtils.isEmpty(userId)) {
             return;
         }
+        // 1. 读缓存
         if (mUserInfoCache != null) {
             UserInfo userInfo = mUserInfoCache.get(userId);
             if (userInfo != null) {
+                // 刷新好友数据
                 RongIM.getInstance().refreshUserInfoCache(userInfo);
                 NLog.d(TAG, "SealUserInfoManager getUserInfo from cache " + userId + " "
                         + userInfo.getName() + " " + userInfo.getPortraitUri());
                 return;
             }
         }
+        // 2. 读好友数据库
         mWorkHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -211,6 +214,8 @@ public class SealUserInfoManager implements OnDataListener {
                     RongIM.getInstance().refreshUserInfoCache(userInfo);
                     return;
                 }
+
+                // 3. 读取群组数据库
                 List<GroupMember> groupMemberList = getGroupMembersWithUserId(userId);
                 if (groupMemberList != null && groupMemberList.size() > 0) {
                     GroupMember groupMember = groupMemberList.get(0);
@@ -221,6 +226,8 @@ public class SealUserInfoManager implements OnDataListener {
                     RongIM.getInstance().refreshUserInfoCache(userInfo);
                     return;
                 }
+
+                // 4. 发送网络请求
                 UserInfoEngine.getInstance(mContext).startEngine(userId);
             }
         });

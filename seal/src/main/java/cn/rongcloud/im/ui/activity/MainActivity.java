@@ -45,6 +45,12 @@ import io.rong.imlib.model.Conversation;
 import io.rong.message.ContactNotificationMessage;
 //import io.rong.toolkit.TestActivity;
 
+/**
+ * 创建ViewPage界面
+ * 1. 创建会话列表: ConversationListFragment, 配置列表显示
+ * 2. 实现IUnReadMessageObserver接口, 如果创建了会话列表, 会回调获取未读信息数
+ * 3. 小红点拖拽回调onDragOut方法, 重新请求获取列表数据, 取消未读状态
+ */
 @SuppressWarnings("deprecation")
 public class MainActivity extends FragmentActivity implements
         ViewPager.OnPageChangeListener,
@@ -72,9 +78,13 @@ public class MainActivity extends FragmentActivity implements
         setContentView(R.layout.activity_main);
         mContext = this;
         isDebug = getSharedPreferences("config", MODE_PRIVATE).getBoolean("isDebug", false);
+        // 初始化控件
         initViews();
+        // 初始化图标文字颜色
         changeTextViewColor();
+        // 改变图标颜色
         changeSelectedTabState(0);
+        // 初始化viewPage
         initMainViewPager();
         registerHomeKeyReceiver(this);
     }
@@ -113,9 +123,11 @@ public class MainActivity extends FragmentActivity implements
 
 
     private void initMainViewPager() {
+        // 会话列表
         Fragment conversationList = initConversationList();
         mViewPager = (ViewPager) findViewById(R.id.main_viewpager);
 
+        // 小红点
         mUnreadNumView = (DragPointView) findViewById(R.id.seal_num);
         mUnreadNumView.setOnClickListener(this);
         mUnreadNumView.setDragListencer(this);
@@ -141,9 +153,9 @@ public class MainActivity extends FragmentActivity implements
         initData();
     }
 
-
     private Fragment initConversationList() {
         if (mConversationListFragment == null) {
+            // 会话列表
             ConversationListFragment listFragment = new ConversationListFragment();
             listFragment.setAdapter(new ConversationListAdapterEx(RongContext.getInstance()));
             Uri uri;
@@ -181,6 +193,7 @@ public class MainActivity extends FragmentActivity implements
                         Conversation.ConversationType.SYSTEM
                 };
             }
+            // 设置配置
             listFragment.setUri(uri);
             mConversationListFragment = listFragment;
             return listFragment;
@@ -241,6 +254,10 @@ public class MainActivity extends FragmentActivity implements
     long firstClick = 0;
     long secondClick = 0;
 
+    /**
+     * 点击事件
+     * @param v
+     */
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -274,10 +291,12 @@ public class MainActivity extends FragmentActivity implements
                 mMineRed.setVisibility(View.GONE);
                 break;
             case R.id.seal_more:
+                // 显示popupwindow
                 MorePopWindow morePopWindow = new MorePopWindow(MainActivity.this);
                 morePopWindow.showPopupWindow(moreImage);
                 break;
             case R.id.ac_iv_search:
+                // 搜索
                 startActivity(new Intent(MainActivity.this, SealSearchActivity.class));
                 break;
         }
@@ -387,6 +406,12 @@ public class MainActivity extends FragmentActivity implements
         }
     }
 
+    /**
+     * 拦截返回事件, 进程退到后台
+     * @param keyCode
+     * @param event
+     * @return
+     */
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
@@ -423,15 +448,20 @@ public class MainActivity extends FragmentActivity implements
         super.onDestroy();
     }
 
+    /**
+     * 消除小红点回调
+     */
     @Override
     public void onDragOut() {
         mUnreadNumView.setVisibility(View.GONE);
         NToast.shortToast(mContext, getString(R.string.clear_success));
+        // 获取会话列表数据
         RongIM.getInstance().getConversationList(new RongIMClient.ResultCallback<List<Conversation>>() {
             @Override
             public void onSuccess(List<Conversation> conversations) {
                 if (conversations != null && conversations.size() > 0) {
                     for (Conversation c : conversations) {
+                        // 清除消息未读状态
                         RongIM.getInstance().clearMessagesUnreadStatus(c.getConversationType(), c.getTargetId(), null);
                     }
                 }
